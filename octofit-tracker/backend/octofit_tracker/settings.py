@@ -25,13 +25,10 @@ SECRET_KEY = 'django-insecure-z)9b#!md7go3fusl93agg=0n=ya5lnfw*2+s3z!z#e846j*ys(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
-# Allow all hosts
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,14 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'octofit_tracker',
-    'rest_framework',
-    'djongo',
-    'corsheaders',
 ]
 
-
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,6 +51,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'octofit_tracker.urls'
+
+# Use custom user model
+AUTH_USER_MODEL = 'octofit_tracker.User'
 
 TEMPLATES = [
     {
@@ -79,24 +74,35 @@ TEMPLATES = [
 WSGI_APPLICATION = 'octofit_tracker.wsgi.application'
 
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+
+import os
+MONGO_USER = os.environ.get('MONGO_USER', 'octofituser')
+MONGO_PASS = os.environ.get('MONGO_PASS', 'octofitpass')
+MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
+MONGO_PORT = os.environ.get('MONGO_PORT', '27017')
+MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE', 'admin')
+MONGO_AUTH_MECH = os.environ.get('MONGO_AUTH_MECH', 'SCRAM-SHA-1')
+
+mongo_client = {
+    'host': f'mongodb://{MONGO_HOST}:{MONGO_PORT}',
+    'authSource': MONGO_AUTH_SOURCE,
+    'authMechanism': MONGO_AUTH_MECH,
+    'username': MONGO_USER,
+    'password': MONGO_PASS,
+}
+
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'octofit_db',
         'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': 'mongodb://localhost:27017',
-            'username': '',
-            'password': '',
-            'authSource': 'admin',
-            'authMechanism': 'SCRAM-SHA-1',
-        },
+        'CLIENT': mongo_client,
     }
 }
 
+DATABASES['default']['CLIENT'] = mongo_client
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -130,21 +136,11 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ['*']
-CORS_ALLOW_METHODS = ['*']
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Custom user model
-AUTH_USER_MODEL = 'octofit_tracker.User'
